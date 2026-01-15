@@ -95,7 +95,7 @@ with st.sidebar:
     st.header("Inputs you have")
 
     st.subheader("Milk")
-    fat_milk = st.number_input("% fat in milk", value=false7, min_value=0.0, step=0.1, format="%.3f")
+    fat_milk = st.number_input("% fat in milk", value=false, min_value=0.0, step=0.1, format="%.3f")
     casein_milk = st.number_input("% casein in milk", value=false, min_value=0.0, step=0.1, format="%.3f")
     lbs_milk = st.number_input("Pounds of milk (optional)", value=false, min_value=0.0, step=100.0, format="%.2f")
 
