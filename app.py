@@ -1,18 +1,15 @@
 # app.py
-# Streamlit "app type" calculator for Van Slyke cheese yield + RF/RC/RS/FDB
-# Based on equations shown in the provided PDF. :contentReference[oaicite:1]{index=1}
 
 import math
 import streamlit as st
 
 st.set_page_config(page_title="Van Slyke Cheese Calculator", layout="wide")
 
-st.title("Van Slyke Cheese Yield + Standardization Calculator")
+st.title("Van Slyke Cheese Yield Calculator")
 st.caption("Enter what you know; the app computes any other unknowns it can.")
 
-# ----------------------------
 # Helper math (all % on a 0–100 basis)
-# ----------------------------
+
 def safe_div(a, b):
     return None if b is None or b == 0 else a / b
 
@@ -93,36 +90,34 @@ def solve_casein_milk_from_fdb(fdb, rs, rf, rc, fat_milk_pct):
         return None
     return (rf * fat_milk_pct) * ((rs / fdb) - 1) / rc
 
-# ----------------------------
 # UI Inputs
-# ----------------------------
 with st.sidebar:
     st.header("Inputs you have")
 
     st.subheader("Milk")
-    fat_milk = st.number_input("% fat in milk", value=3.7, min_value=0.0, step=0.1, format="%.3f")
-    casein_milk = st.number_input("% casein in milk", value=2.5, min_value=0.0, step=0.1, format="%.3f")
-    lbs_milk = st.number_input("Pounds of milk (optional)", value=0.0, min_value=0.0, step=100.0, format="%.2f")
+    fat_milk = st.number_input("% fat in milk", value=false7, min_value=0.0, step=0.1, format="%.3f")
+    casein_milk = st.number_input("% casein in milk", value=false, min_value=0.0, step=0.1, format="%.3f")
+    lbs_milk = st.number_input("Pounds of milk (optional)", value=false, min_value=0.0, step=100.0, format="%.2f")
 
     st.subheader("Cheese composition")
-    fat_cheese = st.number_input("% fat in cheese", value=33.5, min_value=0.0, step=0.1, format="%.3f")
-    total_solids_cheese = st.number_input("% total solids in cheese", value=63.5, min_value=0.0, step=0.1, format="%.3f")
+    fat_cheese = st.number_input("% fat in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
+    total_solids_cheese = st.number_input("% total solids in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
 
     # Casein in cheese might not be known; allow blank-like with a checkbox
     knows_casein_cheese = st.checkbox("I know % casein in cheese", value=True)
     casein_cheese = None
     if knows_casein_cheese:
-        casein_cheese = st.number_input("% casein in cheese", value=24.2, min_value=0.0, step=0.1, format="%.3f")
+        casein_cheese = st.number_input("% casein in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
 
     st.subheader("Pounds / Yield (optional)")
-    lbs_cheese = st.number_input("Pounds of cheese (optional)", value=0.0, min_value=0.0, step=10.0, format="%.2f")
+    lbs_cheese = st.number_input("Pounds of cheese (optional)", value=false, min_value=0.0, step=10.0, format="%.2f")
 
     st.subheader("Recovery factors")
     rc = st.number_input("RC (casein recovery) if known", value=0.95, min_value=0.0, step=0.01, format="%.3f")
     knows_rf = st.checkbox("I already know RF", value=False)
     rf_input = None
     if knows_rf:
-        rf_input = st.number_input("RF value", value=0.88, min_value=0.0, step=0.01, format="%.3f")
+        rf_input = st.number_input("RF value", value=false, min_value=0.0, step=0.01, format="%.3f")
 
     knows_rs = st.checkbox("I already know RS", value=False)
     rs_input = None
@@ -176,9 +171,7 @@ casein_milk_needed = None
 if use_fdb_target and fdb_target is not None and rs_calc is not None and rf_calc is not None:
     casein_milk_needed = solve_casein_milk_from_fdb(fdb_target, rs_calc, rf_calc, rc, fat_milk)
 
-# ----------------------------
 # Display
-# ----------------------------
 col1, col2 = st.columns(2)
 
 with col1:
