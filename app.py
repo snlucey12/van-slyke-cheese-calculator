@@ -93,46 +93,76 @@ def solve_casein_milk_from_fdb(fdb, rs, rf, rc, fat_milk_pct):
 # UI Inputs
 with st.sidebar:
     st.header("Inputs you have")
+    st.info("Check the boxes for the values you know. Leave others unchecked to keep them blank.")
 
+    # ----------------
+    # Milk
+    # ----------------
     st.subheader("Milk")
-    fat_milk = st.number_input("% fat in milk", value=false, min_value=0.0, step=0.1, format="%.3f")
-    casein_milk = st.number_input("% casein in milk", value=false, min_value=0.0, step=0.1, format="%.3f")
-    lbs_milk = st.number_input("Pounds of milk (optional)", value=false, min_value=0.0, step=100.0, format="%.2f")
 
+    fat_milk = None
+    if st.checkbox("I know % fat in milk", value=False):
+        fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
+
+    casein_milk = None
+    if st.checkbox("I know % casein in milk", value=False):
+        casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
+
+    lbs_milk = None
+    if st.checkbox("I know pounds of milk", value=False):
+        lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
+
+    # ----------------
+    # Cheese composition
+    # ----------------
     st.subheader("Cheese composition")
-    fat_cheese = st.number_input("% fat in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
-    total_solids_cheese = st.number_input("% total solids in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
 
-    # Casein in cheese might not be known; allow blank-like with a checkbox
-    knows_casein_cheese = st.checkbox("I know % casein in cheese", value=True)
+    fat_cheese = None
+    if st.checkbox("I know % fat in cheese", value=False):
+        fat_cheese = st.number_input("% fat in cheese", min_value=0.0, step=0.1, format="%.3f")
+
+    total_solids_cheese = None
+    if st.checkbox("I know % total solids in cheese", value=False):
+        total_solids_cheese = st.number_input("% total solids in cheese", min_value=0.0, step=0.1, format="%.3f")
+
     casein_cheese = None
-    if knows_casein_cheese:
-        casein_cheese = st.number_input("% casein in cheese", value=false, min_value=0.0, step=0.1, format="%.3f")
+    if st.checkbox("I know % casein in cheese", value=False):
+        casein_cheese = st.number_input("% casein in cheese", min_value=0.0, step=0.1, format="%.3f")
 
+    # ----------------
+    # Pounds (optional)
+    # ----------------
     st.subheader("Pounds / Yield (optional)")
-    lbs_cheese = st.number_input("Pounds of cheese (optional)", value=false, min_value=0.0, step=10.0, format="%.2f")
 
+    lbs_cheese = None
+    if st.checkbox("I know pounds of cheese", value=False):
+        lbs_cheese = st.number_input("Pounds of cheese", min_value=0.0, step=10.0, format="%.2f")
+
+    # ----------------
+    # Recovery factors
+    # ----------------
     st.subheader("Recovery factors")
-    rc = st.number_input("RC (casein recovery) if known", value=0.95, min_value=0.0, step=0.01, format="%.3f")
-    knows_rf = st.checkbox("I already know RF", value=False)
+
+    rc = None
+    if st.checkbox("I know RC (casein recovery)", value=False):
+        rc = st.number_input("RC (casein recovery)", min_value=0.0, step=0.01, format="%.3f")
+
     rf_input = None
-    if knows_rf:
-        rf_input = st.number_input("RF value", value=false, min_value=0.0, step=0.01, format="%.3f")
+    if st.checkbox("I already know RF", value=False):
+        rf_input = st.number_input("RF value", min_value=0.0, step=0.01, format="%.3f")
 
-    knows_rs = st.checkbox("I already know RS", value=False)
     rs_input = None
-    if knows_rs:
-        rs_input = st.number_input("RS value", value=1.10, min_value=0.0, step=0.01, format="%.3f")
+    if st.checkbox("I already know RS", value=False):
+        rs_input = st.number_input("RS value", min_value=0.0, step=0.01, format="%.3f")
 
+    # ----------------
+    # FDB target (optional)
+    # ----------------
     st.subheader("FDB target (optional)")
     use_fdb_target = st.checkbox("I have a desired/known FDB", value=False)
     fdb_target = None
     if use_fdb_target:
-        fdb_target = st.number_input("FDB (fat in dry basis) value", value=0.527, min_value=0.0, step=0.001, format="%.4f")
-
-# Convert "0 means missing" to None for optional pound inputs
-lbs_milk = None if lbs_milk == 0 else lbs_milk
-lbs_cheese = None if lbs_cheese == 0 else lbs_cheese
+        fdb_target = st.number_input("FDB (fat in dry basis) value", min_value=0.0, step=0.001, format="%.4f")
 
 # ----------------------------
 # Compute what we can
@@ -146,10 +176,11 @@ rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(fat_che
 # RF: either user-provided, or computed from pounds (if lbs known), or solvable from FDB target (if provided + RS)
 rf_calc = rf_input
 
-rf_from_pounds = calc_rf_from_pounds(fat_cheese, lbs_cheese, fat_milk, lbs_milk) if (lbs_cheese and lbs_milk) else None
-
-if rf_calc is None and rf_from_pounds is not None:
-    rf_calc = rf_from_pounds
+rf_from_pounds = (
+    calc_rf_from_pounds(fat_cheese, lbs_cheese, fat_milk, lbs_milk)
+    if (lbs_cheese is not None and lbs_milk is not None and fat_cheese is not None and fat_milk is not None)
+    else None
+)
 
 # If still no RF, try solving from an FDB target (or from cheese composition FDB) if user wants that
 rf_from_fdb = None
@@ -161,10 +192,19 @@ if rf_calc is None and use_fdb_target and fdb_target is not None and rs_calc is 
 yield_pct = calc_yield_pct(rf_calc, rc, rs_calc, fat_milk, casein_milk, total_solids_cheese)
 
 # Pounds cheese predicted
-lbs_cheese_pred = calc_lbs_cheese_from_yield(lbs_milk, yield_pct) if lbs_milk else None
+lbs_cheese_pred = (
+    calc_lbs_cheese_from_yield(lbs_milk, yield_pct)
+    if (lbs_milk is not None and yield_pct is not None)
+    else None
+)
 
 # Actual yield from pounds
-yield_pct_actual = calc_yield_pct_from_pounds(lbs_cheese, lbs_milk) if (lbs_cheese and lbs_milk) else None
+yield_pct_actual = (
+    calc_yield_pct_from_pounds(lbs_cheese, lbs_milk)
+    if (lbs_cheese is not None and lbs_milk is not None)
+    else None
+)
+
 
 # If user has FDB target and RF + others known, solve for required casein in milk (how to standardize)
 casein_milk_needed = None
@@ -203,8 +243,8 @@ with col2:
 st.divider()
 st.subheader("What’s missing?")
 missing = []
-if rs_calc is None:
-    missing.append("RS (need %casein in cheese + cheese fat + cheese total solids, or enter RS directly)")
+if rc is None:
+    missing.append("RC (enter RC, casein recovery)")
 if rf_calc is None:
     missing.append("RF (need pounds milk + pounds cheese, OR enter RF directly, OR provide FDB target + RS to solve RF)")
 if yield_pct is None:
@@ -214,9 +254,6 @@ if missing:
     st.warning("Some outputs couldn't be computed because these are missing:\n\n- " + "\n- ".join(missing))
 else:
     st.success("All major outputs were computed from your inputs.")
-    
-    
-    
     
     st.divider()
 st.subheader("How to calculate each value")
