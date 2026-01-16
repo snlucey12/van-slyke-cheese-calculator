@@ -283,7 +283,6 @@ with st.sidebar:
 # Always can compute FDB from cheese comp (if fat + total solids given)
 fdb_from_comp = calc_fdb(fat_cheese, total_solids_cheese)
 
-
 # RF: either user-provided, or computed from pounds (if lbs known), or solvable from FDB target (if provided + RS)
 rf_calc = rf_input
 
@@ -293,11 +292,14 @@ rf_from_pounds = (
     else None
 )
 
-# RS: use entered casein in cheese if provided, else use computed casein_cheese_calc
-rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
-    fat_cheese, casein_cheese_calc, total_solids_cheese
-)
-
+rs_calc = rs_input
+if rs_calc is None:
+    rs_calc = calc_rs_from_cheese_comp(
+        fat_cheese,
+        casein_cheese,   # may be None, that's okay
+        total_solids_cheese
+    )
+    
 # If still no RF, try solving from an FDB target (or from cheese composition FDB) if user wants that
 rf_from_fdb = None
 if rf_calc is None and use_fdb_target and fdb_target is not None and rs_calc is not None:
@@ -358,6 +360,8 @@ if casein_cheese_calc is None:
 rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
     fat_cheese, casein_cheese_calc, total_solids_cheese
 )
+yield_pct = calc_yield_pct(rf_calc, rc, rs_calc, fat_milk, casein_milk, total_solids_cheese)
+
 
 # Display
 st.subheader("Results")
