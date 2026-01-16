@@ -177,7 +177,7 @@ with st.sidebar:
 
     fat_milk = None
     if st.checkbox("I know % fat in milk", value=False):
-            fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
+        fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
 
     protein_milk_pct = None
     if st.checkbox("I know % protein in milk", value=False):
@@ -189,7 +189,7 @@ with st.sidebar:
     else:
         # If user does NOT know casein, compute from protein
         if protein_milk_pct is not None:
-        casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
+            casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
 
     lbs_milk = None
     if st.checkbox("I know pounds of milk", value=False):
@@ -211,6 +211,11 @@ with st.sidebar:
     casein_cheese = None
     if st.checkbox("I know % casein in cheese", value=False):
         casein_cheese = st.number_input("% casein in cheese", min_value=0.0, step=0.1, format="%.3f")
+        protein_cheese = None
+    
+    protein_cheese = None
+    if st.checkbox("I know % protein in cheese", value=False):
+        protein_cheese = st.number_input("% protein in cheese", min_value=0.0, step=0.1, format="%.3f")
 
     # ----------------
     # Pounds (optional)
