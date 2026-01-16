@@ -231,7 +231,7 @@ casein_milk_needed = None
 if use_fdb_target and fdb_target is not None and rs_calc is not None and rf_calc is not None:
     casein_milk_needed = solve_casein_milk_from_fdb(fdb_target, rs_calc, rf_calc, rc, fat_milk)
     
-    ratio_cf = None
+ratio_cf = None
 if use_fdb_target and fdb_target is not None:
     fdb_frac = fdb_target / 100.0   # because user enters percent (44 means 0.44)
     ratio_cf = calc_casein_fat_ratio_from_fdb(fdb_frac)
