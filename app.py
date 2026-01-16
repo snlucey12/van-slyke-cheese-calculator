@@ -199,9 +199,11 @@ with st.sidebar:
         if st.checkbox("Pounds of milk", value=False):
             lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
 
-    # ----------------
-    # Cheese composition
-    # ----------------
+
+
+
+    # CHEESE COMPOSITION
+
     with st.expander("Cheese composition", expanded=True):
         c1, c2 = st.columns(2)
 
@@ -240,17 +242,21 @@ with st.sidebar:
             if st.checkbox("Protein in cheese (%)", value=False):
                 protein_cheese = st.number_input("Cheese protein (%)", min_value=0.0, step=0.1, format="%.3f")
 
-    # ----------------
-    # Pounds / Yield
-    # ----------------
+
+
+
+    # POUNDS/YIELD
+
     with st.expander("Pounds / Yield (optional)", expanded=False):
         lbs_cheese = None
         if st.checkbox("Pounds of cheese", value=False):
             lbs_cheese = st.number_input("Pounds of cheese", min_value=0.0, step=10.0, format="%.2f")
 
-    # ----------------
-    # Recovery factors
-    # ----------------
+
+
+
+    # RECOVERY FACTORS
+
     with st.expander("Recovery factors", expanded=True):
         c1, c2 = st.columns(2)
 
@@ -268,18 +274,18 @@ with st.sidebar:
         if st.checkbox("RS (serum solids factor)", value=False):
             rs_input = st.number_input("RS", min_value=0.0, step=0.01, format="%.3f")
 
-    # ----------------
-    # FDB target
-    # ----------------
+    
+    # FDB TARGET
+    
     with st.expander("FDB target (optional)", expanded=False):
         use_fdb_target = st.checkbox("I have a desired/known FDB%", value=False)
         fdb_target = None
         if use_fdb_target:
             fdb_target = st.number_input("FDB (fat in dry basis) %", min_value=0.0, step=0.001, format="%.4f")
 
-# ----------------------------
-# Compute what we can
-# ----------------------------
+
+# COMPUTE WHAT WE CAN
+
 # Always can compute FDB from cheese comp (if fat + total solids given)
 fdb_from_comp = calc_fdb(fat_cheese, total_solids_cheese)
 
@@ -408,24 +414,6 @@ with right:
 
 st.divider()
 
-# Inputs used (trust-builder)
-with st.expander("Inputs used (what the calculator actually used)", expanded=False):
-    st.write({
-        "Milk fat (%)": fat_milk,
-        "Milk protein (%)": protein_milk_pct,
-        "Milk casein (%)": casein_milk,
-        "Milk lbs": lbs_milk,
-        "Cheese fat (%)": fat_cheese,
-        "Cheese total solids (%)": total_solids_cheese,
-        "Cheese casein (%) (entered)": casein_cheese,
-        "Cheese protein (%) (entered)": protein_cheese,
-        "Cheese lbs": lbs_cheese,
-        "RC": rc,
-        "RF (used)": rf_calc,
-        "RS (used)": rs_calc,
-        "FDB target (%)": fdb_target,
-    })
-
 # What’s missing (cleaner)
 missing = []
 if rc is None:
@@ -460,3 +448,4 @@ with st.expander("How calculations work", expanded=False):
 **Milk casein from milk protein (optional)**  
 - milk casein% = 0.82 × milk protein%  
 """)
+    
