@@ -123,6 +123,18 @@ def solve_rs_from_yield(yield_pct, rf, rc, fat_milk_pct, casein_milk_pct, total_
     ts_frac = total_solids_cheese_pct / 100.0
     return (yield_pct * ts_frac) / denom
 
+def calc_fdb_from_milk_recoveries(rf, rc, rs, fat_milk_pct, casein_milk_pct):
+    """
+    FDB (fraction) = (RF*F) / ((RF*F + RC*C) * RS)
+    Returns fraction (0–1). Multiply by 100 for percent.
+    """
+    if None in (rf, rc, rs, fat_milk_pct, casein_milk_pct):
+        return None
+    denom = ((rf * fat_milk_pct) + (rc * casein_milk_pct)) * rs
+    if denom == 0:
+        return None
+    return (rf * fat_milk_pct) / denom
+
 
 # UI Inputs
 with st.sidebar:
@@ -221,6 +233,9 @@ rf_from_fdb = None
 if rf_calc is None and use_fdb_target and fdb_target is not None and rs_calc is not None:
     rf_from_fdb = solve_rf_from_fdb(fdb_target, rs_calc, rc, fat_milk, casein_milk)
     rf_calc = rf_from_fdb
+    
+fdb_from_milk_frac = calc_fdb_from_milk_recoveries(rf_calc, rc, rs_calc, fat_milk, casein_milk)
+fdb_from_milk_pct = None if fdb_from_milk_frac is None else (fdb_from_milk_frac * 100.0)
 
 # Yield
 yield_pct = calc_yield_pct(rf_calc, rc, rs_calc, fat_milk, casein_milk, total_solids_cheese)
@@ -290,6 +305,8 @@ with col2:
 
     if ratio_cf is not None:
         st.write(f"Required **casein:fat ratio (C/F)** from FDB: **{ratio_cf:.3f}**")
+    if fdb_from_milk_pct is not None:
+        st.write(f"FDB (from milk + RF/RC/RS) ≈ **{fdb_from_milk_pct:.2f}%**")
 
 
 st.divider()
