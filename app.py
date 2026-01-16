@@ -167,90 +167,115 @@ def calc_casein_cheese_pct_from_milk(lbs_milk, lbs_cheese, rc, casein_milk_pct):
 
 # UI Inputs
 with st.sidebar:
-    st.header("Inputs you have")
-    st.info("Check the boxes for the values you know. Leave others unchecked to keep them blank.")
+    st.header("Inputs")
+    st.caption("Check what you know. Leave unchecked to keep blank.")
 
-# ----------------
-# Milk
-# ----------------
-    st.subheader("Milk")
+    # ----------------
+    # Milk
+    # ----------------
+    with st.expander("Milk", expanded=True):
+        c1, c2 = st.columns(2)
+        fat_milk = None
+        with c1:
+            if st.checkbox("Fat in milk (%)", value=False):
+                fat_milk = st.number_input("Milk fat (%)", min_value=0.0, step=0.1, format="%.3f")
 
-    fat_milk = None
-    if st.checkbox("I know % fat in milk", value=False):
-        fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
+        protein_milk_pct = None
+        with c2:
+            if st.checkbox("Protein in milk (%)", value=False):
+                protein_milk_pct = st.number_input("Milk protein (%)", min_value=0.0, step=0.1, format="%.3f")
 
-    protein_milk_pct = None
-    if st.checkbox("I know % protein in milk", value=False):
-        protein_milk_pct = st.number_input("% protein in milk", min_value=0.0, step=0.1, format="%.3f")
+        casein_milk = None
+        if st.checkbox("Casein in milk (%)", value=False):
+            casein_milk = st.number_input("Milk casein (%)", min_value=0.0, step=0.1, format="%.3f")
+        else:
+            if protein_milk_pct is not None:
+                casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
 
-    casein_milk = None
-    if st.checkbox("I know % casein in milk", value=False):
-        casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
-    else:
-        # If user does NOT know casein, compute from protein
-        if protein_milk_pct is not None:
-            casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
+        if protein_milk_pct is not None and casein_milk is not None:
+            st.caption(f"Using casein = 0.82 × protein → **{casein_milk:.3f}% casein**")
 
-    lbs_milk = None
-    if st.checkbox("I know pounds of milk", value=False):
-        lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
-    
-# ----------------
-# Cheese composition
-# ----------------
-    st.subheader("Cheese composition")
+        lbs_milk = None
+        if st.checkbox("Pounds of milk", value=False):
+            lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
 
-    fat_cheese = None
-    if st.checkbox("I know % fat in cheese", value=False):
-        fat_cheese = st.number_input("% fat in cheese", min_value=0.0, step=0.1, format="%.3f")
+    # ----------------
+    # Cheese composition
+    # ----------------
+    with st.expander("Cheese composition", expanded=True):
+        c1, c2 = st.columns(2)
 
-    total_solids_cheese = None
-    if st.checkbox("I know % total solids in cheese", value=False):
-        total_solids_cheese = st.number_input("% total solids in cheese", min_value=0.0, step=0.1, format="%.3f")
+        fat_cheese = None
+        with c1:
+            if st.checkbox("Fat in cheese (%)", value=False):
+                fat_cheese = st.number_input("Cheese fat (%)", min_value=0.0, step=0.1, format="%.3f")
 
-    casein_cheese = None
-    if st.checkbox("I know % casein in cheese", value=False):
-        casein_cheese = st.number_input("% casein in cheese", min_value=0.0, step=0.1, format="%.3f")
+        total_solids_cheese = None
+        with c2:
+            if st.checkbox("Total solids in cheese (%)", value=False):
+                total_solids_cheese = st.number_input("Cheese total solids (%)", min_value=0.0, step=0.1, format="%.3f")
+
+        # Optional moisture input (prevents TS/moisture confusion)
+        moisture_cheese = None
+        if st.checkbox("Moisture in cheese (%)", value=False):
+            moisture_cheese = st.number_input("Cheese moisture (%)", min_value=0.0, step=0.1, format="%.3f")
+
+        # If TS not entered but moisture is, compute TS
+        if total_solids_cheese is None and moisture_cheese is not None:
+            total_solids_cheese = 100.0 - moisture_cheese
+            st.caption(f"Computed total solids = 100 − moisture → **{total_solids_cheese:.3f}%**")
+
+        # Guardrail warning (common error)
+        if total_solids_cheese is not None and total_solids_cheese < 30:
+            st.warning("Total solids looks very low (<30%). Did you enter moisture? (TS = 100 − moisture)")
+
+        c1, c2 = st.columns(2)
+        casein_cheese = None
+        with c1:
+            if st.checkbox("Casein in cheese (%)", value=False):
+                casein_cheese = st.number_input("Cheese casein (%)", min_value=0.0, step=0.1, format="%.3f")
+
         protein_cheese = None
-    
-    protein_cheese = None
-    if st.checkbox("I know % protein in cheese", value=False):
-        protein_cheese = st.number_input("% protein in cheese", min_value=0.0, step=0.1, format="%.3f")
+        with c2:
+            if st.checkbox("Protein in cheese (%)", value=False):
+                protein_cheese = st.number_input("Cheese protein (%)", min_value=0.0, step=0.1, format="%.3f")
 
     # ----------------
-    # Pounds (optional)
+    # Pounds / Yield
     # ----------------
-    st.subheader("Pounds / Yield (optional)")
-
-    lbs_cheese = None
-    if st.checkbox("I know pounds of cheese", value=False):
-        lbs_cheese = st.number_input("Pounds of cheese", min_value=0.0, step=10.0, format="%.2f")
+    with st.expander("Pounds / Yield (optional)", expanded=False):
+        lbs_cheese = None
+        if st.checkbox("Pounds of cheese", value=False):
+            lbs_cheese = st.number_input("Pounds of cheese", min_value=0.0, step=10.0, format="%.2f")
 
     # ----------------
     # Recovery factors
     # ----------------
-    st.subheader("Recovery factors")
+    with st.expander("Recovery factors", expanded=True):
+        c1, c2 = st.columns(2)
 
-    rc = None
-    if st.checkbox("I know RC (casein recovery)", value=False):
-        rc = st.number_input("RC (casein recovery)", min_value=0.0, step=0.01, format="%.3f")
+        rc = None
+        with c1:
+            if st.checkbox("RC (casein recovery)", value=False):
+                rc = st.number_input("RC", min_value=0.0, step=0.01, format="%.3f")
 
-    rf_input = None
-    if st.checkbox("I already know RF", value=False):
-        rf_input = st.number_input("RF value", min_value=0.0, step=0.01, format="%.3f")
+        rf_input = None
+        with c2:
+            if st.checkbox("RF (fat recovery)", value=False):
+                rf_input = st.number_input("RF", min_value=0.0, step=0.01, format="%.3f")
 
-    rs_input = None
-    if st.checkbox("I already know RS", value=False):
-        rs_input = st.number_input("RS value", min_value=0.0, step=0.01, format="%.3f")
+        rs_input = None
+        if st.checkbox("RS (serum solids factor)", value=False):
+            rs_input = st.number_input("RS", min_value=0.0, step=0.01, format="%.3f")
 
     # ----------------
-    # FDB target (optional)
+    # FDB target
     # ----------------
-    st.subheader("FDB target (optional)")
-    use_fdb_target = st.checkbox("I have a desired/known FDB%", value=False)
-    fdb_target = None
-    if use_fdb_target:
-        fdb_target = st.number_input("FDB (fat in dry basis) value", min_value=0.0, step=0.001, format="%.4f")
+    with st.expander("FDB target (optional)", expanded=False):
+        use_fdb_target = st.checkbox("I have a desired/known FDB%", value=False)
+        fdb_target = None
+        if use_fdb_target:
+            fdb_target = st.number_input("FDB (fat in dry basis) %", min_value=0.0, step=0.001, format="%.4f")
 
 # ----------------------------
 # Compute what we can
@@ -258,8 +283,10 @@ with st.sidebar:
 # Always can compute FDB from cheese comp (if fat + total solids given)
 fdb_from_comp = calc_fdb(fat_cheese, total_solids_cheese)
 
-# RS: either user-provided, or computed from cheese composition if casein_cheese provided
-rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(fat_cheese, casein_cheese, total_solids_cheese)
+# RS: use entered casein in cheese if provided, else use computed casein_cheese_calc
+rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
+    fat_cheese, casein_cheese_calc, total_solids_cheese
+)
 
 # RF: either user-provided, or computed from pounds (if lbs known), or solvable from FDB target (if provided + RS)
 rf_calc = rf_input
@@ -327,6 +354,104 @@ if casein_cheese_calc is None:
     )
 
 # Display
+st.subheader("Results")
+
+k1, k2, k3, k4 = st.columns(4)
+k1.metric("VS Yield (%)", "—" if yield_pct is None else f"{yield_pct:.2f}")
+k2.metric("RF", "—" if rf_calc is None else f"{rf_calc:.3f}")
+k3.metric("RS", "—" if rs_calc is None else f"{rs_calc:.3f}")
+k4.metric("FDB (%)", "—" if fdb_from_comp is None else f"{fdb_from_comp:.2f}")
+
+st.divider()
+
+left, right = st.columns([1.2, 1])
+
+with left:
+    st.subheader("Details")
+
+    if lbs_cheese_pred is not None:
+        st.metric("Cheese lbs (predicted)", f"{lbs_cheese_pred:.2f}")
+
+    if yield_pct_actual is not None:
+        st.metric("Yield (%) from pounds", f"{yield_pct_actual:.2f}")
+
+    st.metric("Casein in cheese (%)", "—" if casein_cheese_calc is None else f"{casein_cheese_calc:.2f}")
+
+with right:
+    st.subheader("Checks / solves")
+
+    if rf_from_pounds is not None:
+        st.write(f"RF from pounds (fat balance): **{rf_from_pounds:.3f}**")
+
+    if rf_from_fdb is not None:
+        st.write(f"RF from FDB target + RS: **{rf_from_fdb:.3f}**")
+
+    if casein_milk_needed is not None:
+        st.write("To hit the entered FDB (holding milk fat fixed):")
+        st.write(f"Required **milk casein ≈ {casein_milk_needed:.3f}%**")
+
+    if ratio_cf is not None:
+        st.write(f"Required **casein:fat ratio (C/F)**: **{ratio_cf:.3f}**")
+
+    if fdb_from_milk_pct is not None:
+        st.write(f"FDB (from milk + RF/RC/RS) ≈ **{fdb_from_milk_pct:.2f}%**")
+
+st.divider()
+
+# Inputs used (trust-builder)
+with st.expander("Inputs used (what the calculator actually used)", expanded=False):
+    st.write({
+        "Milk fat (%)": fat_milk,
+        "Milk protein (%)": protein_milk_pct,
+        "Milk casein (%)": casein_milk,
+        "Milk lbs": lbs_milk,
+        "Cheese fat (%)": fat_cheese,
+        "Cheese total solids (%)": total_solids_cheese,
+        "Cheese casein (%) (entered)": casein_cheese,
+        "Cheese protein (%) (entered)": protein_cheese,
+        "Cheese lbs": lbs_cheese,
+        "RC": rc,
+        "RF (used)": rf_calc,
+        "RS (used)": rs_calc,
+        "FDB target (%)": fdb_target,
+    })
+
+# What’s missing (cleaner)
+missing = []
+if rc is None:
+    missing.append("RC")
+if rf_calc is None:
+    missing.append("RF (enter RF, compute from pounds, or solve from FDB target + RS)")
+if rs_calc is None:
+    missing.append("RS (enter RS or provide cheese comp to compute)")
+if total_solids_cheese is None:
+    missing.append("Cheese total solids (or moisture)")
+
+if missing:
+    st.warning("Some outputs could not be computed. Missing:\n\n- " + "\n- ".join(missing))
+else:
+    st.success("All major outputs were computed from your inputs.")
+
+# How it works (collapsible)
+with st.expander("How calculations work", expanded=False):
+    st.markdown("""
+**Actual yield (from pounds)**  
+- % Yield = (lbs cheese / lbs milk) × 100  
+
+**Van Slyke predicted yield**  
+- % Yield = [ (RF × milk fat%) + (RC × milk casein%) ] × RS ÷ (TS/100)  
+
+**FDB (fat in dry basis)**  
+- FDB% = (cheese fat% / cheese total solids%) × 100  
+
+**RS (serum solids factor)**  
+- RS = 1 + (TS − fat − casein) / (fat + casein)  
+
+**Milk casein from milk protein (optional)**  
+- milk casein% = 0.82 × milk protein%  
+""")
+
+
 col1, col2 = st.columns(2)
 
 with col1:
@@ -360,79 +485,6 @@ with col2:
     if ratio_cf is not None:
         st.write(f"Required **casein:fat ratio (C/F)** from FDB: **{ratio_cf:.3f}**")
     if fdb_from_milk_pct is not None:
-        st.write(f"FDB (from milk + RF/RC/RS) ≈ **{fdb_from_milk_pct:.2f}%**")
-
-
-st.divider()
-st.subheader("What’s missing?")
-missing = []
-if rc is None:
-    missing.append("RC (enter RC, casein recovery)")
-if rf_calc is None:
-    missing.append("RF (need pounds milk + pounds cheese, OR enter RF directly, OR provide FDB target + RS to solve RF)")
-if yield_pct is None:
-    missing.append("% Yield (need RF, RC, RS, milk fat%, milk casein%, and cheese total solids%)")
-
-if missing:
-    st.warning("Some outputs couldn't be computed because these are missing:\n\n- " + "\n- ".join(missing))
-else:
-    st.success("All major outputs were computed from your inputs.")
-    
-    st.divider()
-st.subheader("How to calculate each value")
-
-st.markdown("""**Cheese yield (% from pounds)**  
-You must enter:
-- Pounds of milk  
-- Pounds of cheese  
-
----
-
-**Predicted cheese yield (Van Slyke)**  
-You must enter:
-- % fat in milk  
-- % casein in milk  
-- % total solids in cheese  
-- RC (casein recovery)  
-- RS (either enter RS directly **or** provide % fat + % casein + % total solids in cheese)  
-- RF (either enter RF directly **or** provide pounds of milk + pounds of cheese **or** provide FDB + RS)
-
----
-
-**Pounds of cheese (predicted)**  
-You must enter:
-- Pounds of milk  
-- A calculable cheese yield (actual or predicted)
-
----
-
-**RF (fat recovery)**  
-You must enter **one** of the following:
-- Pounds of milk + pounds of cheese  
-- RF directly  
-- FDB + RS + milk composition  
-
----
-
-**RS (serum solids factor)**  
-You must enter **one** of the following:
-- RS directly  
-- % fat in cheese + % casein in cheese + % total solids in cheese  
-
----
-
-**FDB (fat in dry basis)**  
-You must enter:
-- % fat in cheese  
-- % total solids in cheese  
-
----
-
-**Milk casein needed to hit a target FDB**  
-You must enter:
-- Target FDB  
-- RS  
-- RF  
-- RC  
-- % fat in milk  
-""")
+        st.write(f"FDB (from milk + RF/RC/RS) ≈ **{fdb_from_milk_pct:.2f}%**"
+                 
+                 
