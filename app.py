@@ -98,11 +98,14 @@ def solve_casein_milk_from_fdb(fdb_pct, rs, rf, rc, fat_milk_pct):
 
     return (rf * fat_milk_pct) * ((1 - y) / (y * rc))
 
-def calc_casein_fat_ratio_from_fdb(fdb_frac):
-    # fdb_frac is 0–1 (e.g., 0.44)
-    if fdb_frac is None or fdb_frac <= 0:
+
+def calc_casein_fat_ratio_from_fdb_recoveries(fdb_pct, rf, rc, rs):
+    if None in (fdb_pct, rf, rc, rs) or rc == 0 or rs == 0:
         return None
-    return (0.85 / 0.95) * ((1 / (1.13 * fdb_frac)) - 1)
+    fdb = fdb_pct / 100.0  # percent -> fraction
+    if fdb <= 0:
+        return None
+    return (rf / rc) * ((1 / (fdb * rs)) - 1)
 
 
 def calc_casein_pct_from_ratio_and_fat(ratio_cf, milk_fat_pct):
@@ -233,8 +236,7 @@ if use_fdb_target and fdb_target is not None and rs_calc is not None and rf_calc
     
 ratio_cf = None
 if use_fdb_target and fdb_target is not None:
-    fdb_frac = fdb_target / 100.0   # because user enters percent (44 means 0.44)
-    ratio_cf = calc_casein_fat_ratio_from_fdb(fdb_frac)
+    ratio_cf = calc_casein_fat_ratio_from_fdb_recoveries(fdb_target, rf_calc, rc, rs_calc)
 
 # Display
 col1, col2 = st.columns(2)
