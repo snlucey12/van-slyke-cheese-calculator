@@ -123,6 +123,7 @@ def solve_rs_from_yield(yield_pct, rf, rc, fat_milk_pct, casein_milk_pct, total_
     ts_frac = total_solids_cheese_pct / 100.0
     return (yield_pct * ts_frac) / denom
 
+
 # UI Inputs
 with st.sidebar:
     st.header("Inputs you have")
@@ -237,6 +238,16 @@ yield_pct_actual = (
     if (lbs_cheese is not None and lbs_milk is not None)
     else None
 )
+
+# Try solving RS from actual yield (book method) if RS not provided and not computable from cheese casein
+rs_from_yield = None
+if rs_input is None and rs_calc is None and yield_pct_actual is not None:
+    # Prefer RF from pounds if available, otherwise use rf_calc
+    rf_for_rs = rf_from_pounds if rf_from_pounds is not None else rf_calc
+    rs_from_yield = solve_rs_from_yield(
+        yield_pct_actual, rf_for_rs, rc, fat_milk, casein_milk, total_solids_cheese
+    )
+    rs_calc = rs_from_yield
 
 
 # If user has FDB target and RF + others known, solve for required casein in milk (how to standardize)
