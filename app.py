@@ -173,27 +173,27 @@ with st.sidebar:
 # ----------------
 # Milk
 # ----------------
-st.subheader("Milk")
+    st.subheader("Milk")
 
-fat_milk = None
+    fat_milk = None
     if st.checkbox("I know % fat in milk", value=False):
-        fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
+            fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
 
-protein_milk_pct = None
-if st.checkbox("I know % protein in milk", value=False):
-    protein_milk_pct = st.number_input("% protein in milk", min_value=0.0, step=0.1, format="%.3f")
+    protein_milk_pct = None
+    if st.checkbox("I know % protein in milk", value=False):
+        protein_milk_pct = st.number_input("% protein in milk", min_value=0.0, step=0.1, format="%.3f")
 
-casein_milk = None
-if st.checkbox("I know % casein in milk", value=False):
-    casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
-else:
-    # If user does NOT know casein, compute from protein
-    if protein_milk_pct is not None:
+    casein_milk = None
+    if st.checkbox("I know % casein in milk", value=False):
+        casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
+    else:
+        # If user does NOT know casein, compute from protein
+        if protein_milk_pct is not None:
         casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
 
-lbs_milk = None
-if st.checkbox("I know pounds of milk", value=False):
-    lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
+    lbs_milk = None
+    if st.checkbox("I know pounds of milk", value=False):
+        lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
     
 # ----------------
 # Cheese composition
@@ -321,9 +321,6 @@ if casein_cheese_calc is None:
         lbs_milk, lbs_cheese_for_comp, rc, casein_milk
     )
 
-# Your requested assumption: protein of cheese = casein of cheese (no extra factor)
-protein_cheese_calc = casein_cheese_calc
-
 # Display
 col1, col2 = st.columns(2)
 
@@ -337,8 +334,8 @@ with col1:
 
     if lbs_cheese_pred is not None:
         st.metric("Cheese lbs (predicted from milk lbs)", f"{lbs_cheese_pred:.2f}")
-        
-    st.metric("Protein in cheese (%)", "—" if protein_cheese_calc is None else f"{protein_cheese_calc:.2f}%")
+
+    st.metric("Casein in cheese (%)", "—" if casein_cheese_calc is None else f"{casein_cheese_calc:.2f}%")
 
 with col2:
     st.subheader("Checks / extra solves")
