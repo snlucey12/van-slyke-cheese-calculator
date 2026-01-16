@@ -311,6 +311,19 @@ ratio_cf = None
 if use_fdb_target and fdb_target is not None:
     ratio_cf = calc_casein_fat_ratio_from_fdb_recoveries(fdb_target, rf_calc, rc, rs_calc)
 
+# Choose a cheese weight to use for composition: actual if given, else predicted
+lbs_cheese_for_comp = lbs_cheese if lbs_cheese is not None else lbs_cheese_pred
+
+# If user didn't enter casein in cheese, try to compute it from RC + milk casein + pounds
+casein_cheese_calc = casein_cheese
+if casein_cheese_calc is None:
+    casein_cheese_calc = calc_casein_cheese_pct_from_milk(
+        lbs_milk, lbs_cheese_for_comp, rc, casein_milk
+    )
+
+# Your requested assumption: protein of cheese = casein of cheese (no extra factor)
+protein_cheese_calc = casein_cheese_calc
+
 # Display
 col1, col2 = st.columns(2)
 
@@ -324,6 +337,8 @@ with col1:
 
     if lbs_cheese_pred is not None:
         st.metric("Cheese lbs (predicted from milk lbs)", f"{lbs_cheese_pred:.2f}")
+        
+    st.metric("Protein in cheese (%)", "—" if protein_cheese_calc is None else f"{protein_cheese_calc:.2f}%")
 
 with col2:
     st.subheader("Checks / extra solves")
