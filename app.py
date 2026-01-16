@@ -14,10 +14,10 @@ def safe_div(a, b):
     return None if b is None or b == 0 else a / b
 
 def calc_fdb(fat_cheese_pct, total_solids_cheese_pct):
-    # FDB = %fat / %total solids (both in cheese)
+    # FDB% = (%fat / %total solids) * 100
     if fat_cheese_pct is None or total_solids_cheese_pct is None or total_solids_cheese_pct == 0:
         return None
-    return fat_cheese_pct / total_solids_cheese_pct
+    return (fat_cheese_pct / total_solids_cheese_pct) * 100.0
 
 def calc_rs_from_cheese_comp(fat_cheese_pct, casein_cheese_pct, total_solids_cheese_pct):
     # RS = 1 + (TS - fat - casein) / (fat + casein)
@@ -58,37 +58,45 @@ def calc_yield_pct_from_pounds(lbs_cheese, lbs_milk):
         return None
     return (lbs_cheese / lbs_milk) * 100.0
 
-def solve_rf_from_fdb(fdb, rs, rc, fat_milk_pct, casein_milk_pct):
+def solve_rf_from_fdb(fdb_pct, rs, rc, fat_milk_pct, casein_milk_pct):
     """
-    From rearranging:
-      FDB = (RF*F)/(RF*F + RC*C) * RS
-    Let y = FDB/RS.
+    Using:
+      FDB% = (RF*F)/(RF*F + RC*C) * RS * 100
+
+    Let y = FDB% / (100*RS).
       RF = (y*RC*C) / (F*(1 - y))
     """
-    if None in (fdb, rs, rc, fat_milk_pct, casein_milk_pct):
+    if None in (fdb_pct, rs, rc, fat_milk_pct, casein_milk_pct):
         return None
     if rs == 0 or fat_milk_pct == 0:
         return None
-    y = fdb / rs
+
+    y = fdb_pct / (100.0 * rs)
     if y <= 0 or y >= 1:
         return None
+
     return (y * rc * casein_milk_pct) / (fat_milk_pct * (1 - y))
 
-def solve_casein_milk_from_fdb(fdb, rs, rf, rc, fat_milk_pct):
+def solve_casein_milk_from_fdb(fdb_pct, rs, rf, rc, fat_milk_pct):
     """
-    Solve for casein% in milk (C) from:
-      FDB = (RF*F)/(RF*F + RC*C) * RS
+    From:
+      FDB% = (RF*F)/(RF*F + RC*C) * RS * 100
 
-    Rearranged:
-      (FDB/RS) = (RF*F)/(RF*F + RC*C)
-      => RC*C = (RF*F) * (RS/FDB - 1)
-      => C = (RF*F) * (RS/FDB - 1) / RC
+    Let y = FDB%/(100*RS)
+      y = (RF*F)/(RF*F + RC*C)
+      => RC*C = (RF*F) * (1 - y)/y
+      => C = (RF*F) * (1 - y)/(y*RC)
     """
-    if None in (fdb, rs, rf, rc, fat_milk_pct):
+    if None in (fdb_pct, rs, rf, rc, fat_milk_pct):
         return None
-    if rc == 0 or fdb == 0:
+    if rc == 0 or rs == 0:
         return None
-    return (rf * fat_milk_pct) * ((rs / fdb) - 1) / rc
+
+    y = fdb_pct / (100.0 * rs)
+    if y <= 0 or y >= 1:
+        return None
+
+    return (rf * fat_milk_pct) * ((1 - y) / (y * rc))
 
 # UI Inputs
 with st.sidebar:
@@ -159,7 +167,7 @@ with st.sidebar:
     # FDB target (optional)
     # ----------------
     st.subheader("FDB target (optional)")
-    use_fdb_target = st.checkbox("I have a desired/known FDB", value=False)
+    use_fdb_target = st.checkbox("I have a desired/known FDB%", value=False)
     fdb_target = None
     if use_fdb_target:
         fdb_target = st.number_input("FDB (fat in dry basis) value", min_value=0.0, step=0.001, format="%.4f")
@@ -216,7 +224,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Computed values")
-    st.metric("FDB (from cheese composition)", "—" if fdb_from_comp is None else f"{fdb_from_comp:.4f}")
+    st.metric("FDB (from cheese composition)", "—" if fdb_from_comp is None else f"{fdb_from_comp:.2f}%")
 
     st.metric("RS", "—" if rs_calc is None else f"{rs_calc:.3f}")
     st.metric("RF", "—" if rf_calc is None else f"{rf_calc:.3f}")
