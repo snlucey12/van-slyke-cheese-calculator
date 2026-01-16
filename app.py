@@ -39,12 +39,15 @@ def calc_rf_from_pounds(fat_cheese_pct, lbs_cheese, fat_milk_pct, lbs_milk):
     return (fat_cheese_pct * lbs_cheese) / denom
 
 def calc_yield_pct(rf, rc, rs, fat_milk_pct, casein_milk_pct, total_solids_cheese_pct):
-    # %Yield = ((RF*%fat_milk) + (RC*%casein_milk)) / %solids_in_cheese  * RS
+    # %Yield = ((RF*F) + (RC*C)) * RS / (TS/100)
     if None in (rf, rc, rs, fat_milk_pct, casein_milk_pct, total_solids_cheese_pct):
         return None
     if total_solids_cheese_pct == 0:
         return None
-    return (((rf * fat_milk_pct) + (rc * casein_milk_pct)) / total_solids_cheese_pct) * rs
+
+    ts_frac = total_solids_cheese_pct / 100.0
+    return (((rf * fat_milk_pct) + (rc * casein_milk_pct)) * rs) / ts_frac
+
 
 def calc_lbs_cheese_from_yield(lbs_milk, yield_pct):
     # lbs cheese = lbs milk * (%yield/100)
