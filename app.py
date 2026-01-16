@@ -4,6 +4,16 @@ import math
 import streamlit as st
 
 st.set_page_config(page_title="Van Slyke Cheese Calculator", layout="wide")
+st.markdown(
+    """
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 420px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 st.title("Van Slyke Cheese Yield Calculator")
 st.caption("Enter what you know; the app computes any other unknowns it can.")
