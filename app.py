@@ -99,14 +99,19 @@ def solve_casein_milk_from_fdb(fdb_pct, rs, rf, rc, fat_milk_pct):
     return (rf * fat_milk_pct) * ((1 - y) / (y * rc))
 
 def calc_casein_fat_ratio_from_fdb(fdb):
-    """
-    Calculates casein-to-fat ratio using Van Slyke-derived FDB equation.
-    Assumes % fat in milk = 1.00 (ratio method).
-    """
+    # ratio = C/F (unitless)
     if fdb is None or fdb <= 0:
         return None
+    denom = 1.13 * fdb
+    if denom == 0:
+        return None
+    return (0.85 / 0.95) * ((1 / denom) - 1)
 
     return (0.85 / 0.95) * ((1 / (1.13 * fdb)) - 1)
+def calc_casein_pct_from_ratio_and_fat(ratio_cf, milk_fat_pct):
+    if ratio_cf is None or milk_fat_pct is None:
+        return None
+    return ratio_cf * milk_fat_pct
 
 # UI Inputs
 with st.sidebar:
