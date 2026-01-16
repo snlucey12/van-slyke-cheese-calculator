@@ -58,24 +58,25 @@ def calc_yield_pct_from_pounds(lbs_cheese, lbs_milk):
         return None
     return (lbs_cheese / lbs_milk) * 100.0
 
-def solve_rf_from_fdb(fdb_pct, rs, rc, fat_milk_pct, casein_milk_pct):
+def solve_rf_from_fdb(fdb_pct, rf_dummy, rc, rs, fat_milk_pct, casein_milk_pct):
     """
-    Using:
-      FDB% = (RF*F)/(RF*F + RC*C) * RS * 100
+    Solves RF from Equation 10 in the book:
 
-    Let y = FDB% / (100*RS).
-      RF = (y*RC*C) / (F*(1 - y))
+    FDB = (RF*F) / ((RF*F + RC*C) * RS)
+
+    fdb_pct: FDB as percent (e.g., 52.7)
+    Returns RF (unitless)
     """
-    if None in (fdb_pct, rs, rc, fat_milk_pct, casein_milk_pct):
+    if None in (fdb_pct, rc, rs, fat_milk_pct, casein_milk_pct):
         return None
-    if rs == 0 or fat_milk_pct == 0:
+    if rc == 0 or rs == 0:
         return None
-
-    y = fdb_pct / (100.0 * rs)
-    if y <= 0 or y >= 1:
+    fdb = fdb_pct / 100.0  # percent → fraction
+    numerator = fdb * rs * rc * casein_milk_pct
+    denom = fat_milk_pct * (1 - fdb * rs)
+    if denom == 0:
         return None
-
-    return (y * rc * casein_milk_pct) / (fat_milk_pct * (1 - y))
+    return numerator / denom
 
 def solve_casein_milk_from_fdb(fdb_pct, rs, rf, rc, fat_milk_pct):
     """
