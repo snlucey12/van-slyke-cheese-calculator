@@ -120,6 +120,11 @@ def calc_casein_fat_ratio_from_fdb_recoveries(fdb_pct, rf, rc, rs):
         return None
     return (rf / rc) * ((1 / (fdb * rs)) - 1)
 
+def calc_casein_from_protein_milk(protein_milk_pct):
+    if protein_milk_pct is None:
+        return None
+    return protein_milk_pct * 0.82
+
 
 def calc_casein_pct_from_ratio_and_fat(ratio_cf, milk_fat_pct):
     if ratio_cf is None or milk_fat_pct is None:
@@ -148,32 +153,51 @@ def calc_fdb_from_milk_recoveries(rf, rc, rs, fat_milk_pct, casein_milk_pct):
         return None
     return (rf * fat_milk_pct) / denom
 
+def calc_casein_cheese_pct_from_milk(lbs_milk, lbs_cheese, rc, casein_milk_pct):
+    """
+    Casein in cheese (%) from milk casein balance:
+      lbs_casein_in_cheese = RC * (casein_milk% * lbs_milk / 100)
+      casein_cheese% = (lbs_casein_in_cheese / lbs_cheese) * 100
+    """
+    if None in (lbs_milk, lbs_cheese, rc, casein_milk_pct) or lbs_cheese == 0:
+        return None
+    lbs_casein_in_cheese = rc * (casein_milk_pct * lbs_milk / 100.0)
+    return (lbs_casein_in_cheese / lbs_cheese) * 100.0
+
 
 # UI Inputs
 with st.sidebar:
     st.header("Inputs you have")
     st.info("Check the boxes for the values you know. Leave others unchecked to keep them blank.")
 
-    # ----------------
-    # Milk
-    # ----------------
-    st.subheader("Milk")
+# ----------------
+# Milk
+# ----------------
+st.subheader("Milk")
 
-    fat_milk = None
+fat_milk = None
     if st.checkbox("I know % fat in milk", value=False):
         fat_milk = st.number_input("% fat in milk", min_value=0.0, step=0.1, format="%.3f")
 
-    casein_milk = None
-    if st.checkbox("I know % casein in milk", value=False):
-        casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
+protein_milk_pct = None
+if st.checkbox("I know % protein in milk", value=False):
+    protein_milk_pct = st.number_input("% protein in milk", min_value=0.0, step=0.1, format="%.3f")
 
-    lbs_milk = None
-    if st.checkbox("I know pounds of milk", value=False):
-        lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
+casein_milk = None
+if st.checkbox("I know % casein in milk", value=False):
+    casein_milk = st.number_input("% casein in milk", min_value=0.0, step=0.1, format="%.3f")
+else:
+    # If user does NOT know casein, compute from protein
+    if protein_milk_pct is not None:
+        casein_milk = calc_casein_from_protein_milk(protein_milk_pct)
 
-    # ----------------
-    # Cheese composition
-    # ----------------
+lbs_milk = None
+if st.checkbox("I know pounds of milk", value=False):
+    lbs_milk = st.number_input("Pounds of milk", min_value=0.0, step=100.0, format="%.2f")
+    
+# ----------------
+# Cheese composition
+# ----------------
     st.subheader("Cheese composition")
 
     fat_cheese = None
