@@ -113,6 +113,16 @@ def calc_casein_pct_from_ratio_and_fat(ratio_cf, milk_fat_pct):
         return None
     return ratio_cf * milk_fat_pct
 
+def solve_rs_from_yield(yield_pct, rf, rc, fat_milk_pct, casein_milk_pct, total_solids_cheese_pct):
+    # RS = Yield% * (TS/100) / ((RF*F) + (RC*C))
+    if None in (yield_pct, rf, rc, fat_milk_pct, casein_milk_pct, total_solids_cheese_pct):
+        return None
+    denom = (rf * fat_milk_pct) + (rc * casein_milk_pct)
+    if denom == 0:
+        return None
+    ts_frac = total_solids_cheese_pct / 100.0
+    return (yield_pct * ts_frac) / denom
+
 # UI Inputs
 with st.sidebar:
     st.header("Inputs you have")
