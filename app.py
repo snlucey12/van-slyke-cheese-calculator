@@ -283,10 +283,6 @@ with st.sidebar:
 # Always can compute FDB from cheese comp (if fat + total solids given)
 fdb_from_comp = calc_fdb(fat_cheese, total_solids_cheese)
 
-# RS: use entered casein in cheese if provided, else use computed casein_cheese_calc
-rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
-    fat_cheese, casein_cheese_calc, total_solids_cheese
-)
 
 # RF: either user-provided, or computed from pounds (if lbs known), or solvable from FDB target (if provided + RS)
 rf_calc = rf_input
@@ -295,6 +291,11 @@ rf_from_pounds = (
     calc_rf_from_pounds(fat_cheese, lbs_cheese, fat_milk, lbs_milk)
     if (lbs_cheese is not None and lbs_milk is not None and fat_cheese is not None and fat_milk is not None)
     else None
+)
+
+# RS: use entered casein in cheese if provided, else use computed casein_cheese_calc
+rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
+    fat_cheese, casein_cheese_calc, total_solids_cheese
 )
 
 # If still no RF, try solving from an FDB target (or from cheese composition FDB) if user wants that
@@ -352,6 +353,11 @@ if casein_cheese_calc is None:
     casein_cheese_calc = calc_casein_cheese_pct_from_milk(
         lbs_milk, lbs_cheese_for_comp, rc, casein_milk
     )
+    
+# RS: use entered casein in cheese if provided, else use computed casein_cheese_calc
+rs_calc = rs_input if rs_input is not None else calc_rs_from_cheese_comp(
+    fat_cheese, casein_cheese_calc, total_solids_cheese
+)
 
 # Display
 st.subheader("Results")
@@ -450,41 +456,3 @@ with st.expander("How calculations work", expanded=False):
 **Milk casein from milk protein (optional)**  
 - milk casein% = 0.82 × milk protein%  
 """)
-
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("Computed values")
-    st.metric("FDB (from cheese composition)", "—" if fdb_from_comp is None else f"{fdb_from_comp:.2f}%")
-
-    st.metric("RS", "—" if rs_calc is None else f"{rs_calc:.3f}")
-    st.metric("RF", "—" if rf_calc is None else f"{rf_calc:.3f}")
-    st.metric("% Yield (predicted)", "—" if yield_pct is None else f"{yield_pct:.2f}%")
-
-    if lbs_cheese_pred is not None:
-        st.metric("Cheese lbs (predicted from milk lbs)", f"{lbs_cheese_pred:.2f}")
-
-    st.metric("Casein in cheese (%)", "—" if casein_cheese_calc is None else f"{casein_cheese_calc:.2f}%")
-
-with col2:
-    st.subheader("Checks / extra solves")
-    if yield_pct_actual is not None:
-        st.metric("% Yield (actual from lbs)", f"{yield_pct_actual:.2f}%")
-
-    if rf_from_pounds is not None:
-        st.write(f"RF computed from pounds (fat balance): **{rf_from_pounds:.3f}**")
-
-    if rf_from_fdb is not None:
-        st.write(f"RF solved from FDB target + RS: **{rf_from_fdb:.3f}**")
-
-    if casein_milk_needed is not None:
-        st.write("If you keep milk fat fixed and want the entered FDB,")
-        st.write(f"required **% casein in milk ≈ {casein_milk_needed:.3f}%**")
-
-    if ratio_cf is not None:
-        st.write(f"Required **casein:fat ratio (C/F)** from FDB: **{ratio_cf:.3f}**")
-    if fdb_from_milk_pct is not None:
-        st.write(f"FDB (from milk + RF/RC/RS) ≈ **{fdb_from_milk_pct:.2f}%**"
-                 
-                 
