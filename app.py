@@ -424,7 +424,7 @@ with right:
 
 st.divider()
 
-# What’s missing (cleaner)
+# What’s missing
 missing = []
 if rc is None:
     missing.append("RC")
