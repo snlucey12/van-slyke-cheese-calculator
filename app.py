@@ -244,13 +244,9 @@ with st.sidebar:
         c1, c2 = st.columns(2)
         casein_cheese = None
         with c1:
-            if st.checkbox("Casein in cheese (%)", value=False):
+            if st.checkbox("Casein (Protein) in cheese (%)", value=False):
                 casein_cheese = st.number_input("Cheese casein (%)", min_value=0.0, step=0.1, format="%.3f")
 
-        protein_cheese = None
-        with c2:
-            if st.checkbox("Protein in cheese (%)", value=False):
-                protein_cheese = st.number_input("Cheese protein (%)", min_value=0.0, step=0.1, format="%.3f")
 
 
 
